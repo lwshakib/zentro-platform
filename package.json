@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.28.1",
+    "@clerk/themes": "^2.4.4",
+    "@google/genai": "^1.12.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -21,8 +24,12 @@
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@remotion/cli": "4.0.331",
+    "@remotion/lambda": "4.0.331",
+    "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "inngest": "^3.40.1",
     "lucide-react": "^0.536.0",
@@ -30,6 +37,7 @@
     "next-themes": "^0.4.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "remotion": "4.0.331",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1"
   },

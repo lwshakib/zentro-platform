@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import '@clerk/themes/shadcn.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -119,4 +120,9 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+::-webkit-scrollbar{
+  width: 0px;
 }
