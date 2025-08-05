@@ -1,162 +1,115 @@
 "use client";
 
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import ConnectYoutubeButton from "../_components/connect-youtube-button";
+import RemoveYoutubeButton from "../_components/remove-youtube-button";
+import YouTubeChannelInfo from "../_components/youtube-channel-info";
+import { toast } from "sonner";
+
 type Props = {};
 
-function page({}: Props) {
+function DashboardSkeleton() {
   return (
-    <div className="w-full h-full flex items-center justify-center p-4 bg-background">
-      <div className="w-full">
-        <div className="text-2xl font-bold mb-6">
-          Welcome to your Dashboard!
-        </div>
-        <div className="mb-4 text-base">
-          Ready to start your faceless YouTube journey? Follow these simple
-          steps to automate your channel and content creation process. Whether
-          you're a beginner or an experienced creator, this guide will help you
-          get up and running in no time!
-        </div>
-        <div className="bg-card p-6 rounded-lg shadow-md">
-          <div className="text-lg font-semibold mb-4">
-            Step-by-Step Guide for YouTube Automation
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center space-x-4">
+            <Skeleton className="w-16 h-16 rounded-full" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
           </div>
-          <ol className="list-decimal list-inside space-y-3 text-base">
-            <li>
-              <span className="font-medium">Create your channel guide:</span>{" "}
-              <a
-                href="/youtube-channel-guide"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Go to Channel Guide
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Get personalized recommendations and a step-by-step plan for
-                your new YouTube channel. This guide will help you define your
-                niche, branding, and content strategy.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Connect your YouTube account:</span>{" "}
-              <a
-                href="/youtube"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Connect Account
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Securely link your YouTube account to enable automated uploads
-                and channel management. This is a one-time process and your data
-                is kept private.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Generate your channel logo:</span>{" "}
-              <a
-                href="/logo-generator"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Logo Generator
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Create a professional logo for your YouTube channel using AI.
-                Choose from different styles and customize colors to match your
-                brand identity.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Create a video:</span>{" "}
-              <a
-                href="/create-video"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Create Video
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Use our AI-powered tools to generate scripts, visuals, and
-                voiceovers. Customize your video style and content with just a
-                few clicks.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Generate video thumbnails:</span>{" "}
-              <a
-                href="/thumbnail-generator"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Thumbnail Generator
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Create eye-catching thumbnails that will increase your video's
-                click-through rate. AI generates multiple options based on your
-                video content and title.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Schedule your uploads:</span>{" "}
-              <a
-                href="/smart-upload-scheduler"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Smart Upload Scheduler
-              </a>
-              <div className="ml-5 text-sm text-muted-foreground">
-                Plan and schedule your video uploads for optimal timing. Set
-                specific dates and times to maximize your audience reach and
-                maintain consistent posting schedules.
-              </div>
-            </li>
-            <li>
-              <span className="font-medium">Manage and upload videos:</span>{" "}
-              <a
-                href="/my-videos"
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                My Videos
-              </a>{" "}
-              — Click a video, then click{" "}
-              <span className="font-semibold">Upload to YouTube</span>. Your
-              video will be uploaded automatically and you will receive an email
-              notification.
-              <div className="ml-5 text-sm text-muted-foreground">
-                Easily keep track of all your generated videos. Uploading is
-                fully automated—just review your video, hit upload, and we'll
-                handle the rest, including sending you a confirmation email.
-              </div>
-            </li>
-          </ol>
-          <div className="mt-6 text-base">
-            Here you can start your faceless YouTube channel! Our platform is
-            designed to make content creation and channel management as easy and
-            efficient as possible. If you have any questions, check out our help
-            resources or reach out for support.
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
           </div>
-        </div>
-        <div className="mt-6 text-center text-sm">
-          If this was helpful, follow me on{" "}
-          <a
-            href="https://github.com/lwshakib"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-blue-600"
-          >
-            GitHub
-          </a>
-          .
-        </div>
+
+          <Separator />
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="text-center space-y-2">
+              <Skeleton className="h-8 w-16 mx-auto" />
+              <Skeleton className="h-4 w-20 mx-auto" />
+            </div>
+            <div className="text-center space-y-2">
+              <Skeleton className="h-8 w-16 mx-auto" />
+              <Skeleton className="h-4 w-20 mx-auto" />
+            </div>
+            <div className="text-center space-y-2">
+              <Skeleton className="h-8 w-16 mx-auto" />
+              <Skeleton className="h-4 w-20 mx-auto" />
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-24" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function page({}: Props) {
+  const [youtubeData, setYoutubeData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleRemoveYoutube = async () => {
+    try {
+      setYoutubeData(null);
+    } catch (err) {
+      console.error("Error removing YouTube connection:", err);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  useEffect(() => {
+    const fetchYoutubeData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("/api/youtube");
+        setYoutubeData(response.data);
+        console.log(response.data);
+      } catch (err) {
+        console.error("Error fetching YouTube data:", err);
+        setError("Failed to fetch YouTube data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchYoutubeData();
+  }, []);
+
+  return (
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        {loading ? (
+          <Skeleton className="h-10 w-32" />
+        ) : youtubeData?.channel?.items?.length ? (
+          <RemoveYoutubeButton onRemove={handleRemoveYoutube} />
+        ) : (
+          <ConnectYoutubeButton />
+        )}
       </div>
+
+      {loading && <DashboardSkeleton />}
+
+      {!loading && !error && youtubeData && (
+        <YouTubeChannelInfo channel={youtubeData.channel} />
+      )}
     </div>
   );
 }

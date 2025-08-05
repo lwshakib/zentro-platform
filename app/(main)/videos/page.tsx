@@ -15,140 +15,40 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  captionStyles,
+  suggestions,
+  videoStyles,
+  videoVoices,
+} from "@/constants/data";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import axios from "axios";
+import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { Plus, Sparkles } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type Props = {};
 
 interface Video {
-  id: string;
-  clerkId: string;
-  audioUrl: string | null;
-  captionStyle: string;
-  captions: any[] | null;
-  createdAt: Date;
-  updatedAt: Date;
-  images: string[];
-  script: string;
-  title: string;
-  videoProgress: "PENDING" | "COMPLETED";
-  videoStyle: string;
-  voice: string;
+  _id: string;
+  title?: string;
+  image: string;
+  updatedAt: string;
+  status: "QUEUED" | "PROCESSING" | "COMPLETED" | "FAILED";
 }
-
-// Dummy data
-const dummyVideos: Video[] = [
-  {
-    id: "1",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "modern",
-    captions: null,
-    createdAt: new Date("2024-01-15T10:30:00Z"),
-    updatedAt: new Date("2024-01-15T10:30:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&h=600&fit=crop",
-    ],
-    script: "Amazing video about AI technology...",
-    title: "The Future of AI Technology",
-    videoProgress: "COMPLETED",
-    videoStyle: "modern",
-    voice: "male",
-  },
-  {
-    id: "2",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "vintage",
-    captions: null,
-    createdAt: new Date("2024-01-14T15:45:00Z"),
-    updatedAt: new Date("2024-01-14T15:45:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=600&fit=crop",
-    ],
-    script: "Exploring the depths of space...",
-    title: "Space Exploration Journey",
-    videoProgress: "COMPLETED",
-    videoStyle: "cinematic",
-    voice: "female",
-  },
-  {
-    id: "3",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "minimal",
-    captions: null,
-    createdAt: new Date("2024-01-13T09:20:00Z"),
-    updatedAt: new Date("2024-01-13T09:20:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=600&fit=crop",
-    ],
-    script: "Digital transformation in business...",
-    title: "Digital Transformation Guide",
-    videoProgress: "PENDING",
-    videoStyle: "corporate",
-    voice: "male",
-  },
-  {
-    id: "4",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "bold",
-    captions: null,
-    createdAt: new Date("2024-01-12T14:15:00Z"),
-    updatedAt: new Date("2024-01-12T14:15:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=600&fit=crop",
-    ],
-    script: "Understanding market trends...",
-    title: "Market Analysis 2024",
-    videoProgress: "COMPLETED",
-    videoStyle: "analytical",
-    voice: "female",
-  },
-  {
-    id: "5",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "elegant",
-    captions: null,
-    createdAt: new Date("2024-01-11T11:30:00Z"),
-    updatedAt: new Date("2024-01-11T11:30:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=600&fit=crop",
-    ],
-    script: "Innovation in modern workplaces...",
-    title: "Workplace Innovation",
-    videoProgress: "COMPLETED",
-    videoStyle: "modern",
-    voice: "male",
-  },
-  {
-    id: "6",
-    clerkId: "user_123",
-    audioUrl: null,
-    captionStyle: "dynamic",
-    captions: null,
-    createdAt: new Date("2024-01-10T16:00:00Z"),
-    updatedAt: new Date("2024-01-10T16:00:00Z"),
-    images: [
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=600&fit=crop",
-    ],
-    script: "Building effective teams...",
-    title: "Team Building Strategies",
-    videoProgress: "PENDING",
-    videoStyle: "collaborative",
-    voice: "female",
-  },
-];
 
 function Page({}: Props) {
   const router = useRouter();
-  const loading = false; // Set to true to show loading state
-  const error: { message: string } | null = null; // Set to error object to show error state
-  const videos = dummyVideos; // Use dummy data
+
+  const { user } = useUser();
+  const videos = useQuery(api.videos.getVideos);
+  const loading = videos === undefined;
+  const error = null; // Convex useQuery handles errors internally
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Video topic selection state
@@ -164,74 +64,103 @@ function Page({}: Props) {
   const [selectedScriptIdx, setSelectedScriptIdx] = useState<number | null>(
     null
   );
-  const [selectedStyle, setSelectedStyle] = useState<string>("Modern");
-
-  const suggestions = [
-    "AI Technology Trends",
-    "Digital Marketing Strategies",
-    "Remote Work Best Practices",
-    "Sustainable Business",
-    "Customer Experience",
-    "Innovation in Tech",
-    "Leadership Skills",
-    "Product Development",
-  ];
-
-  const videoStyles = [
-    {
-      label: "Modern",
-      src: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=200&h=200&fit=crop",
-    },
-    {
-      label: "Cinematic",
-      src: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=200&h=200&fit=crop",
-    },
-    {
-      label: "Corporate",
-      src: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=200&fit=crop",
-    },
-    {
-      label: "Analytical",
-      src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=200&fit=crop",
-    },
-    {
-      label: "Collaborative",
-      src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=200&h=200&fit=crop",
-    },
-    {
-      label: "Vintage",
-      src: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=200&fit=crop",
-    },
-  ];
+  const [selectedStyle, setSelectedStyle] = useState<string>("Anime");
+  const [selectedVoice, setSelectedVoice] = useState<string>("Thalia");
+  const [selectedCaptionStyle, setSelectedCaptionStyle] = useState<{
+    label: string;
+    className: string;
+  } | null>(null);
 
   const selectedTopic = selectedSuggestion || customTopic;
 
-  const handleGenerateScript = () => {
+  const handleGenerateScript = async () => {
     if (!selectedTopic) return;
+
     setScriptLoading(true);
-    // Simulate script generation with dummy scripts
-    setTimeout(() => {
+
+    try {
+      const response = axios.post("/api/scripts", {
+        topic: selectedTopic,
+      });
+
+      toast.promise(response, {
+        loading: "Generating script...",
+        success: "Script generated successfully",
+        error: "Failed to generate script",
+      });
+
+      const { data } = await response;
+      setGeneratedScripts(data.data.scripts || []);
+    } catch (error) {
+      console.error("Error generating script:", error);
+      toast.error("Failed to generate script");
+    } finally {
       setScriptLoading(false);
-      setGeneratedScripts([
-        {
-          content:
-            "Welcome to our comprehensive guide on AI Technology Trends. In this video, we'll explore the latest developments in artificial intelligence and how they're reshaping industries worldwide. From machine learning breakthroughs to practical applications, we'll cover everything you need to know about the future of AI.",
-        },
-        {
-          content:
-            "Discover the cutting-edge world of artificial intelligence in our latest video. We'll dive deep into emerging AI technologies, their real-world applications, and what this means for businesses and individuals alike. Join us as we explore the fascinating landscape of AI innovation.",
-        },
-        {
-          content:
-            "Artificial Intelligence is revolutionizing how we work and live. In this engaging video, we'll examine the most significant AI trends of 2024, from generative AI to autonomous systems. Learn how these technologies are creating new opportunities and transforming traditional industries.",
-        },
-      ]);
-    }, 2000);
+    }
   };
 
-  const handleCreateVideo = () => {
-    setIsCreateDialogOpen(false);
-    router.push("/create-video");
+  const createVideo = useMutation(api.videos.createVideo);
+
+  const handleCreateVideo = async () => {
+    if (
+      !user?.id ||
+      selectedScriptIdx === null ||
+      !selectedStyle ||
+      !selectedVoice ||
+      !selectedCaptionStyle
+    ) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      // Find the selected voice to get the Model
+      const selectedVoiceData = videoVoices.find(
+        (voice) => voice.Id === selectedVoice
+      );
+      if (!selectedVoiceData) {
+        toast.error("Invalid voice selection");
+        return;
+      }
+
+      const videoData = {
+        clerkId: user.id,
+        script: generatedScripts[selectedScriptIdx!].content,
+        topic: selectedTopic,
+        captionStyle: selectedCaptionStyle,
+        videoStyle: selectedStyle,
+        voice: selectedVoiceData.Model, // Use the Model instead of Id
+        status: "QUEUED",
+        updatedAt: new Date().toISOString(),
+        // No title provided as requested
+      };
+      setIsCreateDialogOpen(false);
+
+      const promise = (async () => {
+        const videoId = await createVideo(videoData);
+        await axios.post("/api/create/video", {
+          videoId,
+        });
+      })();
+
+      toast.promise(promise, {
+        loading: "Creating video...",
+        success: "Video created successfully!",
+        error: "Failed to create video",
+      });
+
+      // Reset form
+      setSelectedSuggestion(null);
+      setCustomTopic("");
+      setGeneratedScripts([]);
+      setSelectedScriptIdx(null);
+      setSelectedStyle("Anime");
+      setSelectedVoice("Thalia");
+      setSelectedCaptionStyle(null);
+    } catch (error) {
+      console.error("Error creating video:", error);
+      toast.error("Failed to create video");
+    }
   };
 
   return (
@@ -256,17 +185,16 @@ function Page({}: Props) {
                 Create Video
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
-              <DialogHeader>
-                <DialogTitle>Create New Video</DialogTitle>
-                <DialogDescription>
-                  Start creating a new video with our AI-powered platform.
-                  Choose your topic and we'll generate a professional script for
-                  you.
-                </DialogDescription>
-              </DialogHeader>
-
-              <ScrollArea className="h-[60vh] pr-4">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+              <ScrollArea className="h-[80vh] pr-4">
+                <DialogHeader>
+                  <DialogTitle>Create New Video</DialogTitle>
+                  <DialogDescription>
+                    Start creating a new video with our AI-powered platform.
+                    Choose your topic and we'll generate a professional script
+                    for you.
+                  </DialogDescription>
+                </DialogHeader>
                 <div className="py-4">
                   <h2 className="text-2xl font-semibold mb-1 mt-4">
                     Video Topic
@@ -335,7 +263,7 @@ function Page({}: Props) {
                         <Skeleton className="h-6 w-2/3" />
                       </div>
                     ) : generatedScripts.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="space-y-3">
                         {generatedScripts.map((script, idx) => (
                           <Card
                             key={idx}
@@ -346,7 +274,7 @@ function Page({}: Props) {
                             }`}
                             onClick={() => setSelectedScriptIdx(idx)}
                           >
-                            <div className="whitespace-pre-line text-xs">
+                            <div className="whitespace-pre-line text-sm">
                               {script.content}
                             </div>
                           </Card>
@@ -355,72 +283,131 @@ function Page({}: Props) {
                     ) : null}
                   </div>
 
-                  {generatedScripts.length > 0 &&
-                    selectedScriptIdx !== null && (
-                      <div className="mt-8">
-                        <h3 className="text-xl font-semibold mb-1">
-                          Video Styles
-                        </h3>
-                        <p className="mb-4 text-muted-foreground text-sm">
-                          Pick a visual style for your video. This will
-                          influence the look and feel of the generated content.
-                          Scroll to see all available styles.
-                        </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                          {videoStyles.map((style) => (
-                            <div
-                              key={style.label}
-                              className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col items-center transition-all duration-150 ${
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-1">Video Styles</h3>
+                    <p className="mb-4 text-muted-foreground text-sm">
+                      Pick a visual style for your video. This will influence
+                      the look and feel of the generated content. Scroll to see
+                      all available styles.
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                      {videoStyles.map((style) => (
+                        <div
+                          key={style.label}
+                          className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col items-center transition-all duration-150 ${
+                            selectedStyle === style.label
+                              ? "border-primary ring-2 ring-primary"
+                              : "border-transparent hover:border-primary/40"
+                          } cursor-pointer`}
+                          onClick={() => setSelectedStyle(style.label)}
+                        >
+                          <img
+                            src={style.src}
+                            alt={style.label}
+                            className="w-28 h-28 object-cover rounded-md mb-2"
+                            style={{
+                              boxShadow:
                                 selectedStyle === style.label
-                                  ? "border-primary ring-2 ring-primary"
-                                  : "border-transparent hover:border-primary/40"
-                              } cursor-pointer`}
-                              onClick={() => setSelectedStyle(style.label)}
-                            >
-                              <img
-                                src={style.src}
-                                alt={style.label}
-                                className="w-28 h-28 object-cover rounded-md mb-2"
-                                style={{
-                                  boxShadow:
-                                    selectedStyle === style.label
-                                      ? "0 0 0 2px var(--tw-ring-color)"
-                                      : undefined,
-                                }}
-                              />
-                              <span className="font-medium text-center">
-                                {style.label}
-                              </span>
-                            </div>
-                          ))}
+                                  ? "0 0 0 2px var(--tw-ring-color)"
+                                  : undefined,
+                            }}
+                          />
+                          <span className="font-medium text-center">
+                            {style.label}
+                          </span>
                         </div>
-                      </div>
-                    )}
-                </div>
-              </ScrollArea>
+                      ))}
+                    </div>
+                  </div>
 
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                {generatedScripts.length > 0 && selectedScriptIdx !== null && (
-                  <Button onClick={handleCreateVideo}>Use This Script</Button>
-                )}
-              </DialogFooter>
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-1">Video Voice</h3>
+                    <p className="mb-4 text-muted-foreground text-sm">
+                      Select a voice style for your video narration.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {videoVoices.map((voice) => (
+                        <button
+                          key={voice.Id}
+                          type="button"
+                          className={`px-5 py-2 rounded-lg font-medium transition-all duration-150 bg-background border-2 focus:outline-none ${
+                            selectedVoice === voice.Id
+                              ? "border-primary ring-2 ring-primary"
+                              : "border-muted hover:border-primary/40"
+                          } cursor-pointer`}
+                          onClick={() => setSelectedVoice(voice.Id)}
+                        >
+                          <div className="flex flex-col items-start">
+                            <span className="font-semibold">{voice.Name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {voice.Gender} • {voice.LanguageName}
+                            </span>
+                            <span className="text-xs text-muted-foreground mt-1">
+                              {voice.Description}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8">
+                    <h3 className="text-xl font-semibold mb-1">
+                      Caption Style
+                    </h3>
+                    <p className="mb-4 text-muted-foreground text-sm">
+                      Select Caption Style
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      {captionStyles.map((style) => (
+                        <button
+                          key={style.label}
+                          type="button"
+                          className={`px-7 py-4 rounded-lg text-2xl transition-all duration-150 font-sans bg-[#151A23] focus:outline-none ${
+                            style.className
+                          } ${
+                            selectedCaptionStyle?.label === style.label
+                              ? "ring-2 ring-primary border-primary border-2"
+                              : "border-2 border-transparent hover:border-primary/40"
+                          } cursor-pointer`}
+                          onClick={() => setSelectedCaptionStyle(style)}
+                          style={{ minWidth: 120 }}
+                        >
+                          {style.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  {generatedScripts.length > 0 &&
+                    selectedScriptIdx !== null &&
+                    selectedStyle &&
+                    selectedVoice &&
+                    selectedCaptionStyle && (
+                      <Button onClick={handleCreateVideo}>
+                        Generate Video
+                      </Button>
+                    )}
+                </DialogFooter>
+              </ScrollArea>
             </DialogContent>
           </Dialog>
         </div>
 
         {/* Loading state */}
-        {loading && (
+        {!videos && (
           <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-            {Array.from({ length: 12 }).map((_, index) => (
+            {Array.from({ length: 8 }).map((_, index) => (
               <div
                 key={index}
-                className="group relative bg-white/80 dark:bg-zinc-900/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-xl border border-gray-200/50 dark:border-zinc-800/50"
+                className="bg-white/80 dark:bg-zinc-900/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-xl border border-gray-200/50 dark:border-zinc-800/50"
               >
                 <div className="aspect-[9/16] relative">
                   {/* Video thumbnail skeleton */}
@@ -432,7 +419,7 @@ function Page({}: Props) {
                   </div>
 
                   {/* Card info overlay skeleton */}
-                  <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                  <div className="absolute bottom-0 left-0 w-full p-4">
                     <Skeleton className="h-4 w-3/4 mb-2" />
                     <Skeleton className="h-3 w-1/2" />
                   </div>
@@ -465,9 +452,7 @@ function Page({}: Props) {
                 Error Loading Videos
               </h3>
               <p className="text-gray-600 dark:text-slate-400 mb-6">
-                {error && error.message
-                  ? error.message
-                  : "Something went wrong"}
+                Something went wrong loading videos
               </p>
               <button
                 onClick={() => window.location.reload()}
@@ -484,63 +469,35 @@ function Page({}: Props) {
           <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
             {videos &&
               videos.length > 0 &&
-              videos.map((video: Video) => (
+              videos.map((video: any) => (
                 <div
-                  key={video.id}
+                  key={video._id}
                   className="group relative bg-white/80 dark:bg-zinc-900/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 hover:bg-gray-50/90 dark:hover:bg-zinc-800/60 border border-gray-200/50 dark:border-zinc-800/50 hover:border-gray-300/50 dark:hover:border-zinc-700/50 cursor-pointer"
+                  onClick={() => router.push(`/videos/${video._id}`)}
                 >
-                  {video.videoProgress === "PENDING" ? (
-                    <div className="aspect-[9/16] flex flex-col items-center justify-center bg-gray-100 dark:bg-zinc-900 relative">
-                      <div className="flex flex-col items-center">
-                        {/* Simple loading spinner */}
-                        <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-                        {/* Simple text */}
-                        <div className="text-center mb-4">
-                          <span className="text-base font-medium text-gray-800 dark:text-white block">
-                            Generating...
-                          </span>
-                        </div>
+                  {video.status === "PROCESSING" ||
+                  video.status === "QUEUED" ? (
+                    <div className="aspect-[9/16] relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden">
+                      {/* Shimmer effect overlay - visible in both light and dark themes */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
 
-                        {/* Simple dots */}
-                        <div className="flex items-center space-x-1">
-                          <div className="w-1.5 h-1.5 bg-gray-500 dark:bg-zinc-400 rounded-full animate-bounce"></div>
-                          <div className="w-1.5 h-1.5 bg-gray-500 dark:bg-zinc-400 rounded-full animate-bounce delay-100"></div>
-                          <div className="w-1.5 h-1.5 bg-gray-500 dark:bg-zinc-400 rounded-full animate-bounce delay-200"></div>
-                        </div>
-                      </div>
-
-                      {/* Card info overlay */}
-                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-transparent dark:from-black/90 dark:via-black/50">
-                        <div className="text-sm font-semibold text-white text-left truncate">
-                          {video.title}
-                        </div>
-                        <div className="text-xs text-gray-300 dark:text-zinc-400 text-left flex items-center mt-1">
-                          <svg
-                            className="w-3 h-3 mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {formatDistanceToNow(new Date(video.createdAt), {
-                            addSuffix: true,
-                          })}
+                      {/* Bottom info skeleton */}
+                      <div className="absolute bottom-0 left-0 w-full p-4">
+                        <div className="h-4 w-3/4 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-zinc-600 dark:to-zinc-700 rounded animate-pulse mb-2"></div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-zinc-600 dark:to-zinc-700 rounded-full animate-pulse mr-2"></div>
+                          <div className="h-3 w-16 bg-gradient-to-r from-gray-300 to-gray-400 dark:from-zinc-600 dark:to-zinc-700 rounded animate-pulse"></div>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div
-                      className="aspect-[9/16] relative group"
-                      onClick={() => router.push(`/videos/${video.id}`)}
-                    >
-                      <img
-                        src={video.images[0]}
-                        alt={video.title}
+                    <div className="aspect-[9/16] relative group">
+                      <Image
+                        src={video.image}
+                        alt={video.title || "Video"}
                         className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                        width={720}
+                        height={1280}
                       />
 
                       {/* Gradient overlays */}
@@ -570,171 +527,49 @@ function Page({}: Props) {
                           {video.title}
                         </div>
                         <div className="text-xs text-zinc-300 text-left flex items-center">
-                          <svg
-                            className="w-3 h-3 mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {formatDistanceToNow(new Date(video.createdAt), {
-                            addSuffix: true,
-                          })}
+                          <span>
+                            {formatDistanceToNow(video.updatedAt)} ago
+                          </span>
                         </div>
                       </div>
                     </div>
                   )}
-
-                  {/* Hover effect border */}
-                  <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-500/30 dark:group-hover:border-blue-400/30 transition-colors duration-300 pointer-events-none"></div>
                 </div>
               ))}
           </div>
         )}
 
         {/* Empty state (when no videos) */}
-        {!loading && !error && videos.length === 0 && (
+        {!loading && !error && videos && videos.length === 0 && (
           <div className="text-center py-20">
-            <div className="relative">
-              {/* Background gradient circle */}
-              <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-gray-200/50 to-gray-100/30 dark:from-slate-700/20 dark:to-slate-600/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-gray-300/30 dark:border-slate-600/20">
-                <div className="w-20 h-20 bg-gradient-to-br from-gray-300/40 to-gray-200/30 dark:from-slate-600/30 dark:to-slate-500/20 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-10 h-10 text-gray-600 dark:text-slate-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Decorative elements */}
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-gray-400/30 dark:bg-slate-500/20 rounded-full"></div>
-              <div className="absolute -bottom-1 -left-1 w-3 h-3 bg-gray-300/40 dark:bg-slate-400/30 rounded-full"></div>
-            </div>
-
             <div className="max-w-md mx-auto">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-3">
-                Your video library is empty
-              </h3>
-              <p className="text-gray-600 dark:text-slate-400 text-lg mb-8 leading-relaxed">
-                Start creating amazing videos with our AI-powered platform. Your
-                first masterpiece is just a click away.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <button
-                  onClick={handleCreateVideo}
-                  className="bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-600 hover:to-gray-700 dark:from-slate-600 dark:to-slate-700 dark:hover:from-slate-500 dark:hover:to-slate-600 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border border-gray-600/30 dark:border-slate-500/30"
+              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-gray-600 dark:text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <div className="flex items-center gap-3">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                    Create Your First Video
-                  </div>
-                </button>
-
-                <button className="text-gray-600 hover:text-gray-800 dark:text-slate-400 dark:hover:text-slate-300 px-6 py-4 font-medium transition-colors duration-200">
-                  Learn More
-                </button>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
+                </svg>
               </div>
-
-              {/* Feature highlights */}
-              <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-2xl mx-auto">
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-200/50 dark:bg-slate-700/30 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-gray-700 dark:text-slate-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-800 dark:text-slate-200 mb-1">
-                    Fast Generation
-                  </h4>
-                  <p className="text-xs text-gray-600 dark:text-slate-500">
-                    Create videos in minutes
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-200/50 dark:bg-slate-700/30 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-gray-700 dark:text-slate-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-800 dark:text-slate-200 mb-1">
-                    AI Powered
-                  </h4>
-                  <p className="text-xs text-gray-600 dark:text-slate-500">
-                    Smart content creation
-                  </p>
-                </div>
-
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-3 bg-gray-200/50 dark:bg-slate-700/30 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-gray-700 dark:text-slate-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-800 dark:text-slate-200 mb-1">
-                    High Quality
-                  </h4>
-                  <p className="text-xs text-gray-600 dark:text-slate-500">
-                    Professional results
-                  </p>
-                </div>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                You haven't created any Video yet
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Start creating your first video to get started.
+              </p>
+              <Button
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+              >
+                Create Your First Video
+              </Button>
             </div>
           </div>
         )}

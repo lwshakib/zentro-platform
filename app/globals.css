@@ -1,8 +1,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import '@clerk/themes/shadcn.css';
+@import "@clerk/themes/shadcn.css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Shimmer animation for video generation loading */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -122,7 +136,6 @@
   }
 }
 
-
-::-webkit-scrollbar{
+::-webkit-scrollbar {
   width: 0px;
 }

@@ -12,7 +12,7 @@ export default async function Layout({
     <SidebarProvider>
       <AppSidebar />
       <main className="w-full h-full">
-        <div className="flex justify-between w-full items-center p-4">
+        <div className="flex justify-between w-full items-center p-4 sticky top-0 z-50 bg-background">
           <SidebarTrigger className="" />
           <div className="flex justify-center items-center gap-4">
             <ModeToggle />

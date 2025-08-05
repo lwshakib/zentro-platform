@@ -65,28 +65,6 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === "/youtube-channel-guide"}
-                    >
-                      <Link href="/youtube-channel-guide">
-                        <Waypoints className="mr-2" />
-                        <span>YouTube Channel Guide</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === "/youtube"}
-                    >
-                      <Link href="/youtube">
-                        <Sparkles className="mr-2" />
-                        <span>YouTube</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
                       isActive={pathname === "/videos"}
                     >
                       <Link href="/videos">
@@ -98,55 +76,11 @@ export function AppSidebar() {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      isActive={pathname === "/my-videos"}
+                      isActive={pathname === "/image-generation"}
                     >
-                      <Link href="/my-videos">
-                        <Youtube className="mr-2" />
-                        <span>My Videos</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === "/my-thumbnails"}
-                    >
-                      <Link href="/my-thumbnails">
+                      <Link href="/image-generation">
                         <Images className="mr-2" />
-                        <span>My Thumbnails</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === "/my-logos"}
-                    >
-                      <Link href="/my-logos">
-                        <Palette className="mr-2" />
-                        <span>My Logos</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === "/thumbnail-generator"}
-                    >
-                      <Link href="/thumbnail-generator">
-                        <Images className="mr-2" />
-                        <span>Thumbnail Generator</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === "/logo-generator"}
-                    >
-                      <Link href="/logo-generator">
-                        <Palette className="mr-2" />
-                        <span>Logo Generator</span>
+                        <span>Image Generation</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
