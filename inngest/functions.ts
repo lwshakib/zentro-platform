@@ -17,8 +17,10 @@ import {
   generateImageUrl,
   getDesiredImageProps,
   getImageData,
+  getSchedule,
   getVideoData,
   updateImage,
+  updateScheduleStatus,
   updateVideoStatus,
   uploadOnYoutube,
   uploadVideo,
@@ -126,7 +128,7 @@ export const scheduleUpload = inngest.createFunction(
         cancelOn: [
             {
                 event: "zentro.schedule.cancel",
-                match: "data.videoId",
+                match: "data.scheduleId",
             },
         ],
     },
@@ -134,33 +136,35 @@ export const scheduleUpload = inngest.createFunction(
         event: "zentro.schedule.upload",
     },
     async ({ event, step }) => {
-        const { videoId, scheduledDateTime, schedulingType, description, googleRefreshToken } = event?.data;
+        const { googleRefreshToken, scheduleId } = event?.data;
         try {
-            if(schedulingType === "smart"){
-              await step.sleepUntil("wait-for-scheduled-time", scheduledDateTime);
+            const schedule: any = await getSchedule(scheduleId, step);
 
+            await step.sleepUntil("wait-for-scheduled-time", schedule?.datetime);
+            if(schedule?.type === "SMART"){
+              await updateScheduleStatus(scheduleId, "PROCESSING", step);
               // Upload Video
-              await uploadVideo(videoId, googleRefreshToken, step);
+              await uploadVideo(schedule?.videoId, googleRefreshToken, step);
+
+              await updateScheduleStatus(scheduleId, "COMPLETED", step);
 
               // For Tommororw
               await inngest.send({
                 name: "zentro.schedule.upload",
                 data: {
-                  videoId,
-                  scheduledDateTime: new Date().toISOString() +  24 * 60 * 60 * 1000,
-                  schedulingType,
-                  description,
                   googleRefreshToken,
+                  scheduleId,
                 }
               })
 
 
             }else{
 
-              await step.sleepUntil("wait-for-scheduled-time", scheduledDateTime);
-
+              await updateScheduleStatus(scheduleId, "PROCESSING", step);
               // Upload Video
-              await uploadVideo(videoId, googleRefreshToken, step);
+              await uploadVideo(schedule?.videoId, googleRefreshToken, step);
+
+              await updateScheduleStatus(scheduleId, "COMPLETED", step);
             }
 
             return true;

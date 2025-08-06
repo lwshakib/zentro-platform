@@ -40,6 +40,7 @@ export default defineSchema({
     datetime: v.string(),
     status: v.string(), // QUEUED | PROCESSING | COMPLETED | FAILED
     description: v.optional(v.string()),
+    type: v.string(), // SMART | NORMAL
   }),
   images: defineTable({
     url: v.string(),

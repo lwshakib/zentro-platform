@@ -75,6 +75,7 @@ function RemotionComposition({ videoData }: Props) {
           top: undefined,
           fontSize: 40,
         }}
+        className={videoData?.videoStyle?.className}
       >
         <h2>{getCurrentCaption()}</h2>
       </AbsoluteFill>

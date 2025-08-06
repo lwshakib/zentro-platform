@@ -282,6 +282,7 @@ export async function updateVideoUrl(videoId: string, videoUrl: string, step: an
 }
 
 export const renderVideo = async (videoData: any, step: any) => {
+  console.log("videoData", videoData);
   const renderVideo = await step.run("renderVideo", async () => {
     const functions = await getFunctions({
       region: "ap-south-1",
@@ -294,7 +295,7 @@ export const renderVideo = async (videoData: any, step: any) => {
       region: "ap-south-1",
       functionName,
       serveUrl: process.env.AWS_REMOTION_SERVE_URL as string,
-      composition: "vidflow",
+      composition: "zentro-platform",
       inputProps: {
         videoData: {
           images: videoData.images,
@@ -430,7 +431,7 @@ export const sendEmailForYoutubeVideoUpload = async(uploadResponse: any, user: a
 
       try {
         const { data, error } = await resend.emails.send({
-          from: "Acme <onboarding@resend.dev>",
+          from: "Zentro Platform <video@mail.vexx.fun>",
           to: [user.email],
           subject: "Scheduled upload complete: Your video is now on YouTube",
           react: EmailTemplate(emailObj as any),
@@ -458,6 +459,24 @@ export const getUser = async(clerkId: any) => {
 }
 
 
+export const getSchedule = async(scheduleId: string, step: any) => {
+  const getScheduleData = await step.run("get-schedule", async () => {
+    const schedule = await convexClient.query(api.schedules.getSchedule, {
+      scheduleId: scheduleId as any,
+    }); 
+    return schedule;
+  });
+  return getScheduleData;
+}
+
+export const updateScheduleStatus = async(scheduleId: string, status: string, step: any) => {
+  await step.run("update-schedule-status", async () => {
+    await convexClient.mutation(api.schedules.updateScheduleStatus, {
+      scheduleId: scheduleId as any,
+      status,
+    });
+  });
+}
 
 
 export const uploadVideo = async (videoId: string, googleRefreshToken: string, step: any) => {
@@ -473,4 +492,5 @@ export const uploadVideo = async (videoId: string, googleRefreshToken: string, s
   const user = await getUser(videoData.clerkId);
 
   await sendEmailForYoutubeVideoUpload(uploadResponse, user, step);
+
 }

@@ -20,6 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useQuery } from "convex/react";
 import {
@@ -34,7 +35,8 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Video {
   id: string;
@@ -132,19 +134,33 @@ export default function SmartUploadSchedulerPage() {
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
+  const [isYoutubeConnected, setIsYoutubeConnected] = useState(false);
 
-  // Use mock data instead of API calls
+  // Fetch data from Convex
   const videos = useQuery(api.videos.getVideos);
-  const scheduledUploads = mockScheduledUploads;
+  const scheduledUploads = useQuery(api.schedules.getSchedules);
+  const { user } = useUser();
 
   const handleScheduleUpload = async () => {
+    if (!isYoutubeConnected) {
+      toast.error(
+        <div>
+          Please connect to YouTube first.{" "}
+          <a href="/dashboard" className="underline font-medium">
+            Go to Dashboard
+          </a>
+        </div>
+      );
+      return;
+    }
+
     if (!selectedVideo || !scheduledTime) {
-      alert("Please select a video and set the time");
+      toast.error("Please select a video and set the time");
       return;
     }
 
     if (!isEnabled && !scheduledDate) {
-      alert("Please select a date for normal scheduling");
+      toast.error("Please select a date for normal scheduling");
       return;
     }
 
@@ -174,8 +190,15 @@ export default function SmartUploadSchedulerPage() {
         description: description || undefined,
       };
 
-      const response = await axios.post("/api/schedule", scheduleData);
-      const result = response.data;
+      const response = axios.post("/api/schedule", scheduleData);
+
+      toast.promise(response, {
+        loading: "Scheduling upload...",
+        success: "Upload scheduled successfully!",
+        error: "Failed to schedule upload. Please try again.",
+      });
+
+      await response;
 
       // Reset form on success
       setSelectedVideo("");
@@ -183,28 +206,34 @@ export default function SmartUploadSchedulerPage() {
       setScheduledTime("");
       setDescription("");
       setIsEnabled(false);
-
-      alert("Upload scheduled successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error scheduling upload:", error);
-      alert("Failed to schedule upload. Please try again.");
+      toast.error(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCancelUpload = (scheduledId: string) => {
+  const handleCancelUpload = async (scheduledId: string) => {
     setCancellingIds((prev) => new Set(prev).add(scheduledId));
 
-    // Simulate cancelling
-    setTimeout(() => {
-      alert("Upload cancelled successfully! (UI Demo)");
+    try {
+      await axios.post(`/api/cancel/schedule`, {
+        data: {
+          scheduleId: scheduledId,
+        },
+      });
+      toast.success("Upload cancelled successfully!");
+    } catch (error: any) {
+      console.error("Error cancelling upload:", error);
+      toast.error("Failed to cancel upload. Please try again.");
+    } finally {
       setCancellingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(scheduledId);
         return newSet;
       });
-    }, 1000);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -217,6 +246,8 @@ export default function SmartUploadSchedulerPage() {
         return <XCircle className="h-4 w-4 text-gray-500" />;
       case "PROCESSING":
         return <PlayCircle className="h-4 w-4 text-blue-500" />;
+      case "QUEUED":
+        return <PauseCircle className="h-4 w-4 text-yellow-500" />;
       default:
         return <PauseCircle className="h-4 w-4 text-yellow-500" />;
     }
@@ -232,6 +263,8 @@ export default function SmartUploadSchedulerPage() {
         return "text-gray-600 bg-gray-50";
       case "PROCESSING":
         return "text-blue-600 bg-blue-50";
+      case "QUEUED":
+        return "text-yellow-600 bg-yellow-50";
       default:
         return "text-yellow-600 bg-yellow-50";
     }
@@ -264,6 +297,20 @@ export default function SmartUploadSchedulerPage() {
       });
     }
   };
+
+  async function fetchYoutubeStatus() {
+    try {
+      const data = await axios.get("/api/youtube/status");
+      setIsYoutubeConnected(data.data.success);
+    } catch (err: any) {
+      console.log(err);
+      setIsYoutubeConnected(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchYoutubeStatus();
+  }, []);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -472,12 +519,32 @@ export default function SmartUploadSchedulerPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {scheduledUploads ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span className="ml-2 text-muted-foreground">
-                Loading scheduled tasks...
-              </span>
+          {!scheduledUploads ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border rounded-lg animate-pulse"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-4 h-4 bg-gray-200 rounded-full"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 bg-gray-200 rounded w-48"></div>
+                        <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                      </div>
+                      <div className="space-y-1">
+                        <div className="h-3 bg-gray-200 rounded w-64"></div>
+                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 bg-gray-200 rounded w-20"></div>
+                    <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : scheduledUploads.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -489,68 +556,77 @@ export default function SmartUploadSchedulerPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {scheduledUploads.map((scheduled: ScheduledUpload) => (
-                <div
-                  key={scheduled.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    {getStatusIcon(scheduled.status)}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{scheduled.video.title}</h4>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            scheduled.status
-                          )}`}
-                        >
-                          {scheduled.status}
-                        </span>
-                      </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p>
-                          Scheduled for:{" "}
-                          {formatDateTime(
-                            scheduled.scheduledDate,
-                            scheduled.schedulingType
-                          )}
-                        </p>
-                        {scheduled.description && (
-                          <p className="text-xs">
-                            Note: {scheduled.description}
+              {scheduledUploads.map((scheduled) => {
+                // Find the corresponding video
+                const video = videos?.find((v) => v._id === scheduled.videoId);
+
+                return (
+                  <div
+                    key={scheduled._id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      {getStatusIcon(scheduled.status)}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">
+                            {video?.title || "Unknown Video"}
+                          </h4>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              scheduled.status
+                            )}`}
+                          >
+                            {scheduled.status}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>
+                            Scheduled for:{" "}
+                            {new Date(scheduled.datetime).toLocaleString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                hour12: true,
+                              }
+                            )}
                           </p>
-                        )}
+                          {scheduled.description && (
+                            <p className="text-xs">
+                              Note: {scheduled.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-xs text-muted-foreground">
-                      {new Date(scheduled.createdAt).toLocaleDateString()}
+                    <div className="flex items-center gap-2">
+                      <div className="text-xs text-muted-foreground">
+                        {new Date(scheduled._creationTime).toLocaleDateString()}
+                      </div>
+                      {(scheduled.status === "QUEUED" ||
+                        scheduled.status === "PROCESSING") && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCancelUpload(scheduled._id)}
+                          disabled={cancellingIds.has(scheduled._id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2"
+                        >
+                          {cancellingIds.has(scheduled._id) ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                        </Button>
+                      )}
                     </div>
-                    {scheduled.status === "PENDING" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCancelUpload(scheduled.id)}
-                        disabled={cancellingIds.has(scheduled.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        {cancellingIds.has(scheduled.id) ? (
-                          <>
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600 mr-1"></div>
-                            Cancelling...
-                          </>
-                        ) : (
-                          <>
-                            <X className="h-3 w-3 mr-1" />
-                            Cancel
-                          </>
-                        )}
-                      </Button>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>
