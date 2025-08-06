@@ -9,6 +9,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
 import axios from "axios";
 import { useMutation, useQuery } from "convex/react";
@@ -133,16 +134,13 @@ export default function ImageGeneration() {
                 </CarouselItem>
               ))
             : // Skeleton loading for carousel
-              Array.from({ length: 6 }).map((_, index) => (
+              Array.from({ length: 3 }).map((_, index) => (
                 <CarouselItem
                   key={index}
                   className="flex justify-center basis-auto"
                 >
                   <div className="cursor-pointer border-2 rounded-md transition border-transparent">
-                    <div className="h-[200px] w-[300px] rounded-md bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 relative overflow-hidden">
-                      {/* Shimmer effect overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
-                    </div>
+                    <Skeleton className="h-[200px] w-[300px] rounded-md" />
                   </div>
                 </CarouselItem>
               ))}
@@ -168,16 +166,21 @@ export default function ImageGeneration() {
                   {/* Status-based content */}
                   {generation.status === "PROCESSING" ||
                   generation.status === "QUEUED" ? (
-                    // Shimmer loading UI for processing/queued
+                    // Skeleton loading UI for processing/queued
                     <div
-                      className={`relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden group ${
+                      className={`relative overflow-hidden group ${
                         generation.type === "LOGO"
                           ? "aspect-square"
                           : "aspect-video"
                       }`}
                     >
-                      {/* Shimmer effect overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
+                      <Skeleton
+                        className={`w-full ${
+                          generation.type === "LOGO"
+                            ? "aspect-square"
+                            : "aspect-video"
+                        }`}
+                      />
 
                       {/* Cancel button */}
                       <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -222,9 +225,11 @@ export default function ImageGeneration() {
                         }`}
                       />
 
-                      {/* Shimmer effect when deleting */}
+                      {/* Skeleton effect when deleting */}
                       {deletingImages.has(generation._id) && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
+                        <div className="absolute inset-0 pointer-events-none">
+                          <Skeleton className="w-full h-full rounded-none" />
+                        </div>
                       )}
 
                       {/* Action buttons */}
@@ -282,9 +287,11 @@ export default function ImageGeneration() {
                         </div>
                       </div>
 
-                      {/* Shimmer effect when deleting */}
+                      {/* Skeleton effect when deleting */}
                       {deletingImages.has(generation._id) && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
+                        <div className="absolute inset-0 pointer-events-none">
+                          <Skeleton className="w-full h-full rounded-none" />
+                        </div>
                       )}
 
                       {/* Delete button */}
@@ -350,20 +357,19 @@ export default function ImageGeneration() {
                 key={index}
                 className="break-inside-avoid mb-3 rounded-lg overflow-hidden shadow-md relative"
               >
-                <div className="aspect-video relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden">
-                  {/* Shimmer effect overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
+                <div className="relative">
+                  <Skeleton className="aspect-video w-full" />
 
-                  {/* Skeleton content */}
+                  {/* Skeleton content overlays */}
                   <div className="absolute inset-0 flex flex-col justify-between p-3">
                     {/* Top section - placeholder for buttons */}
                     <div className="flex justify-end">
-                      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse"></div>
+                      <Skeleton className="w-8 h-8 rounded-full" />
                     </div>
 
                     {/* Bottom section - placeholder for status */}
                     <div className="flex justify-start">
-                      <div className="w-16 h-6 bg-gray-300 dark:bg-gray-600 rounded-full animate-pulse"></div>
+                      <Skeleton className="w-16 h-6 rounded-full" />
                     </div>
                   </div>
                 </div>

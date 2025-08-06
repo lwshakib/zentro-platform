@@ -1,7 +1,6 @@
 "use client";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
-import { ModeToggle } from "@/components/mode-toggle";
 import {
   Accordion,
   AccordionContent,
@@ -34,7 +33,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white">
       {/* Header */}
-   <Header />
+      <Header />
 
       {/* Hero Section */}
       <main className="flex flex-col items-center text-center px-6 pt-24 pb-12">
@@ -65,27 +64,50 @@ export default function LandingPage() {
       {/* Features Section */}
       <section className="py-20 px-6 max-w-6xl mx-auto grid md:grid-cols-3 gap-10">
         {[
-          "Content Planning",
-          "AI Script Generation",
-          "Video Creation",
-          "Auto Publishing",
-          "Analytics & Insights",
-          "Channel Growth",
+          {
+            title: "AI Script Generation",
+            description:
+              "Generate engaging scripts based on your topics using Google Gemini AI with 30+ content categories.",
+          },
+          {
+            title: "Multi-Style Video Creation",
+            description:
+              "Choose from 7 visual styles including Anime, Cyberpunk, Cinematic, and more for unique content.",
+          },
+          {
+            title: "Professional Voice Synthesis",
+            description:
+              "High-quality text-to-speech with 4 professional AI voices powered by Deepgram technology.",
+          },
+          {
+            title: "Smart Caption Styling",
+            description:
+              "6 different caption styles from YOUTUBER to NEON GLITCH for maximum viewer engagement.",
+          },
+          {
+            title: "AI Image Generation",
+            description:
+              "Create thumbnails, logos, and banners with AI-powered image generation and optimization.",
+          },
+          {
+            title: "Smart Upload Scheduler",
+            description:
+              "Optimize posting times with AI-driven scheduling for maximum audience reach and engagement.",
+          },
         ].map((feature, index) => (
           <Card
-            key={feature}
+            key={feature.title}
             className="bg-white/5 dark:bg-zinc-900 border-none shadow-xl"
           >
             <CardHeader className="flex flex-col items-center">
               <CheckCircle className="text-green-400 mb-4" size={32} />
               <CardTitle className="text-xl font-semibold mb-2 text-center dark:text-white text-zinc-900">
-                {feature}
+                {feature.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-gray-700 dark:text-gray-400 text-center">
-                Plan your content strategy and discover trending topics to
-                maximize your reach and engagement.
+                {feature.description}
               </p>
             </CardContent>
           </Card>
@@ -109,38 +131,51 @@ export default function LandingPage() {
             </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4 text-balance">
               <p>
-                Our platform streamlines your entire YouTube workflow from
-                content planning to publishing, using AI to generate scripts,
-                create videos, and manage your channel growth automatically.
+                Zentro streamlines your entire YouTube workflow from content
+                creation to publishing. We use Google Gemini AI to generate
+                engaging scripts, create videos with 7 different visual styles,
+                add professional voice synthesis, and automatically schedule
+                uploads for optimal engagement.
               </p>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-2">
             <AccordionTrigger>
-              Can I edit videos before publishing?
+              What video styles and voices are available?
             </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4 text-balance">
               <p>
-                Yes! You can preview, edit, and optimize your videos before
-                scheduling or uploading.
+                Choose from 7 visual styles: Anime, GTA, Cyberpunk, Watercolor,
+                Cartoon, Cinematic, and Realistic. For voices, we offer 4
+                professional AI voices (Thalia, Helena, Arcas, Zeus) with
+                different personalities and 6 caption styles including YOUTUBER,
+                NEON, and GLITCH effects.
               </p>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-3">
-            <AccordionTrigger>Is there a free trial?</AccordionTrigger>
+            <AccordionTrigger>
+              How does the AI image generation work?
+            </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4 text-balance">
               <p>
-                Absolutely. Get started for free and explore all core features
-                before upgrading.
+                Our AI can generate custom thumbnails, logos, and banners that
+                match your video content. Images are optimized using ImageKit
+                for fast loading and stored securely in the cloud for easy
+                access across all your projects.
               </p>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-4">
-            <AccordionTrigger>What languages are supported?</AccordionTrigger>
+            <AccordionTrigger>
+              What is Smart Upload Scheduling?
+            </AccordionTrigger>
             <AccordionContent className="flex flex-col gap-4 text-balance">
               <p>
-                We support English and are working on adding more languages
-                soon.
+                Smart scheduling uses AI to analyze your audience engagement
+                patterns and recommend optimal upload times. You can also
+                schedule normal uploads or batch process multiple videos for
+                automated publishing to your connected YouTube channel.
               </p>
             </AccordionContent>
           </AccordionItem>
@@ -163,19 +198,22 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              quote: "This tool saved me hours!",
+              quote:
+                "The AI script generation and 7 video styles completely transformed my content creation workflow!",
               name: "Alex Kim",
-              tag: "YouTuber",
+              tag: "Tech YouTuber",
               avatar: "https://randomuser.me/api/portraits/men/32.jpg",
             },
             {
-              quote: "My views skyrocketed!",
+              quote:
+                "Smart scheduling helped me reach 100K subscribers faster than I ever imagined!",
               name: "Priya Singh",
-              tag: "Content Creator",
+              tag: "Educational Creator",
               avatar: "https://randomuser.me/api/portraits/women/44.jpg",
             },
             {
-              quote: "Now I focus only on creativity!",
+              quote:
+                "The professional AI voices and caption styles make my shorts stand out instantly!",
               name: "Carlos Rivera",
               tag: "Shorts Producer",
               avatar: "https://randomuser.me/api/portraits/men/65.jpg",
@@ -230,8 +268,9 @@ export default function LandingPage() {
           Ready to Scale Your YouTube Channel?
         </h2>
         <p className="text-lg text-zinc-700 dark:text-zinc-300 mb-8 max-w-xl mx-auto">
-          Join thousands of creators automating their YouTube journey. Start for
-          free—no credit card required!
+          Join thousands of creators using AI-powered video generation, smart
+          scheduling, and professional voice synthesis. Start for free—no credit
+          card required!
         </p>
         <Button
           size="lg"

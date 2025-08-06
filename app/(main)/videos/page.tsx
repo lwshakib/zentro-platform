@@ -16,13 +16,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   captionStyles,
   suggestions,
   videoStyles,
   videoVoices,
 } from "@/constants/data";
 import { api } from "@/convex/_generated/api";
-import { useUser } from "@clerk/nextjs";
+import { Protect, useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
@@ -180,12 +185,32 @@ function Page({}: Props) {
             open={isCreateDialogOpen}
             onOpenChange={setIsCreateDialogOpen}
           >
-            <DialogTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Create Video
-              </Button>
-            </DialogTrigger>
+            <Protect
+              plan={"pro"}
+              fallback={
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Create Video
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>You can't create videos without a Pro subscription</p>
+                  </TooltipContent>
+                </Tooltip>
+              }
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Create Video
+                </Button>
+              </DialogTrigger>
+            </Protect>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
               <ScrollArea className="h-[80vh] pr-4">
                 <DialogHeader>
@@ -565,12 +590,28 @@ function Page({}: Props) {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Start creating your first video to get started.
               </p>
-              <Button
-                onClick={() => setIsCreateDialogOpen(true)}
-                className=" text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+              <Protect
+                plan={"pro"}
+                fallback={
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button className=" text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        Create Your First Video
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>You can't create videos without a Pro subscription</p>
+                    </TooltipContent>
+                  </Tooltip>
+                }
               >
-                Create Your First Video
-              </Button>
+                <Button
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className=" text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                >
+                  Create Your First Video
+                </Button>
+              </Protect>
             </div>
           </div>
         )}
