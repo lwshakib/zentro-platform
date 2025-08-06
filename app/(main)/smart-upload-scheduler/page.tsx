@@ -218,12 +218,16 @@ export default function SmartUploadSchedulerPage() {
     setCancellingIds((prev) => new Set(prev).add(scheduledId));
 
     try {
-      await axios.post(`/api/cancel/schedule`, {
-        data: {
+      const promise = axios.post(`/api/cancel/schedule`,
+         {
           scheduleId: scheduledId,
-        },
-      });
-      toast.success("Upload cancelled successfully!");
+        }
+      );
+      toast.promise(promise, {
+        loading: "Cancelling schedule...",
+        success: "Schedule cancelled successfully!",
+        error: "Failed to cancel schedule. Please try again.",
+      })
     } catch (error: any) {
       console.error("Error cancelling upload:", error);
       toast.error("Failed to cancel upload. Please try again.");

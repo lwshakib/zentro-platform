@@ -1,6 +1,7 @@
 import { convexClient } from "@/config";
 import { api } from "@/convex/_generated/api";
 import { inngest } from "@/inngest/client";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     const { scheduleId } = await req.json();
@@ -15,4 +16,8 @@ export async function POST(req: Request) {
     await convexClient.mutation(api.schedules.deleteSchedule, {
         scheduleId,
     });
+
+    return NextResponse.json({
+        success:true
+    })
 }

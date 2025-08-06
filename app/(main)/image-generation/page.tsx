@@ -169,7 +169,13 @@ export default function ImageGeneration() {
                   {generation.status === "PROCESSING" ||
                   generation.status === "QUEUED" ? (
                     // Shimmer loading UI for processing/queued
-                    <div className="aspect-square relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden group">
+                    <div
+                      className={`relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden group ${
+                        generation.type === "LOGO"
+                          ? "aspect-square"
+                          : "aspect-video"
+                      }`}
+                    >
                       {/* Shimmer effect overlay */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
 
@@ -209,7 +215,11 @@ export default function ImageGeneration() {
                         alt="Generated Image"
                         width={400}
                         height={400}
-                        className="w-full h-auto object-cover"
+                        className={`w-full h-auto object-cover ${
+                          generation.type === "LOGO"
+                            ? "aspect-square"
+                            : "aspect-video"
+                        }`}
                       />
 
                       {/* Shimmer effect when deleting */}
@@ -253,7 +263,13 @@ export default function ImageGeneration() {
                     </div>
                   ) : (
                     // Failed state with delete button
-                    <div className="aspect-square relative bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 overflow-hidden group">
+                    <div
+                      className={`relative bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 overflow-hidden group ${
+                        generation.type === "LOGO"
+                          ? "aspect-square"
+                          : "aspect-video"
+                      }`}
+                    >
                       {/* Failed state background */}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
@@ -334,7 +350,7 @@ export default function ImageGeneration() {
                 key={index}
                 className="break-inside-avoid mb-3 rounded-lg overflow-hidden shadow-md relative"
               >
-                <div className="aspect-square relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden">
+                <div className="aspect-video relative bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-900 overflow-hidden">
                   {/* Shimmer effect overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-300/40 to-transparent dark:via-white/20 animate-shimmer"></div>
 

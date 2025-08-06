@@ -203,6 +203,7 @@ export async function generateImageUrl(
  
     let response: any;
     if (imageGeneration.selectedImage) {
+      console.log("I got image")
       const response2 = await axios.get(imageGeneration.selectedImage.url, {
         responseType: "arraybuffer",
       });
@@ -229,21 +230,21 @@ export async function generateImageUrl(
       },
     });
 
+    }else{
+      console.log("Where is my image?")
+      response = await googleAi.models.generateContent({
+       model: "gemini-2.0-flash-preview-image-generation",
+       contents: [
+         {
+           text: props.prompt,
+         }
+       ],
+       config: {
+         responseModalities: [Modality.TEXT, Modality.IMAGE],
+       },
+     });
     }
 
-     response = await googleAi.models.generateContent({
-      model: "gemini-2.0-flash-preview-image-generation",
-      contents: [
-        {
-          text: props.prompt,
-        }
-      ],
-      config: {
-        responseModalities: [Modality.TEXT, Modality.IMAGE],
-      },
-    });
-
-  
 
     if (
       response.candidates &&
@@ -282,8 +283,8 @@ export async function updateVideoUrl(videoId: string, videoUrl: string, step: an
 }
 
 export const renderVideo = async (videoData: any, step: any) => {
-  console.log("videoData", videoData);
   const renderVideo = await step.run("renderVideo", async () => {
+    await updateVideoRenderStatus(videoData._id, "RENDERING", step);
     const functions = await getFunctions({
       region: "ap-south-1",
       compatibleOnly: true,
@@ -319,11 +320,13 @@ export const renderVideo = async (videoData: any, step: any) => {
         region: "ap-south-1",
       });
       if (progress.done) {
+        await updateVideoRenderStatus(videoData._id, "RENDERED", step);
         console.log("Render finished!", progress.outputFile);
         return progress.outputFile;
         process.exit(0);
       }
       if (progress.fatalErrorEncountered) {
+        await updateVideoRenderStatus(videoData._id, "NOT_RENDERED", step);
         console.error("Error enountered", progress.errors);
         return { message: "Error", data: progress.errors };
         process.exit(1);
@@ -481,7 +484,12 @@ export const updateScheduleStatus = async(scheduleId: string, status: string, st
 
 export const uploadVideo = async (videoId: string, googleRefreshToken: string, step: any) => {
   const videoData = await getVideoData(videoId, step);
-  const videoUrl = await renderVideo(videoData, step);
+  let videoUrl: string;
+  if(!videoData.videoUrl){
+    videoUrl = await renderVideo(videoData, step);
+  }else{
+    videoUrl = videoData.videoUrl;
+  }
 
   await updateVideoUrl(videoId, videoUrl, step);
 
@@ -493,4 +501,12 @@ export const uploadVideo = async (videoId: string, googleRefreshToken: string, s
 
   await sendEmailForYoutubeVideoUpload(uploadResponse, user, step);
 
+}
+
+
+export const updateVideoRenderStatus = async(videoId: string, rendering: string, step: any) => {
+    await convexClient.mutation(api.videos.updateVideoRenderStatus, {
+      videoId: videoId as any,
+      rendering,
+    });
 }

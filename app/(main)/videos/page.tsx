@@ -132,6 +132,7 @@ function Page({}: Props) {
         voice: selectedVoiceData.Model, // Use the Model instead of Id
         status: "QUEUED",
         updatedAt: new Date().toISOString(),
+        rendering: "NOT_RENDERED",
         // No title provided as requested
       };
       setIsCreateDialogOpen(false);
@@ -566,7 +567,7 @@ function Page({}: Props) {
               </p>
               <Button
                 onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
+                className=" text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200"
               >
                 Create Your First Video
               </Button>

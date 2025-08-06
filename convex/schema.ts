@@ -25,6 +25,7 @@ export default defineSchema({
     status: v.string(), // QUEUED | PROCESSING | COMPLETED | FAILED
     updatedAt: v.string(),
     videoUrl: v.optional(v.string()),
+    rendering: v.optional(v.string()) // NOT_FOUND | RENDERING | RENDERED
   }),
   imageGenerations: defineTable({
     clerkId: v.string(),

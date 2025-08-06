@@ -24,6 +24,8 @@ function RemotionComposition({ videoData }: Props) {
       ? captions[captions.length - 1]?.end * fps
       : 0;
 
+      
+
   const getCurrentCaption = () => {
     const currentTime = frame / 30;
     const currentCaption = captions?.find(

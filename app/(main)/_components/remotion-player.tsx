@@ -1,13 +1,12 @@
 "use client";
 import { Player } from "@remotion/player";
-import { useState } from "react";
 import RemotionComposition from "./remotion-composition";
 type Props = {
   videoData: any;
 };
 
 function RemotionPlayer({ videoData }: Props) {
-  const [durationInFrame, setDurationInFrame] = useState(100);
+
 
   return (
     <Player

@@ -107,12 +107,10 @@ Original Prompt:
 Instructions:
 1. Use clear, specific language—remove ambiguity and define the intent.
 2. Add minimal context about the task or audience if needed.
-3. Define the desired output format (e.g., paragraph, list, steps).
-4. Include one or two examples if they help clarify the goal.
-5. Set basic constraints—tone, length, or what to avoid.
-6. Keep the prompt concise but precise. Preserve the original intent.
+3. Set basic constraints—tone, length, or what to avoid.
+4. Keep the prompt concise. Preserve the original intent.
 
-Return only the enhanced prompt as plain text. No markdown, no explanation, no formatting.
+Return only the enhanced prompt as plain text. No markdown, no explanation, no formatting. Just as plain text no markdown also on the plain text.
 `;
 
 
@@ -125,70 +123,65 @@ export const IMAGE_GENERATION_SCRIPT = `
 You are an expert image generation prompt analyzer. Analyze the TYPE and PROMPT provided above.
 
 **ANALYSIS INSTRUCTIONS:**
-1. Carefully examine the user's prompt for any specific visual requirements, style preferences, colors, or technical specifications
-2. Identify if the user has mentioned aspect ratios, dimensions, or platform requirements
-3. Extract key visual elements, themes, and artistic styles from the prompt
-4. Determine the most appropriate technical specifications based on the image type
+1. Examine the prompt for visual requirements, style preferences, color schemes, and technical details.
+2. Identify any explicit aspect ratio, image dimensions, or platform (default: YouTube).
+3. Extract themes, visual elements, and artistic styles from the prompt content.
+4. Determine suitable technical specifications based on the TYPE if not provided.
 
 **TYPE-SPECIFIC REQUIREMENTS:**
 
-**LOGO Requirements (YouTube Channel Icon):**
-- Aspect Ratio: 1:1 (square format) - displays as circular on YouTube
+**LOGO (YouTube Channel Icon):**
+- Aspect Ratio: 1:1 (square format, displayed as circular on YouTube)
 - Recommended Size: 800x800 pixels
-- File Format: JPG, PNG, GIF, or BMP (max 2MB)
-- Style focus: Clean, memorable, professional, works well in circular crop
-- Design considerations: Center important elements, avoid text near edges
+- File Format: PNG, JPG, GIF, or BMP (max 2MB)
+- Style: Clean, memorable, professional
+- Design Note: Center key elements, avoid text near edges
 
-**BANNER Requirements (YouTube Channel Art):**
+**BANNER (YouTube Channel Art):**
 - Aspect Ratio: 16:9 
-- Recommended Size: 2560x1440 pixels (ideal for all devices including TV)
+- Recommended Size: 2560x1440 pixels
 - Minimum Size: 2048x1152 pixels
-- Safe Area: 1546x423 pixels (visible on all devices - keep text/logos here)
-- Style focus: Eye-catching, text in safe area, works across devices
-- Design considerations: Account for different device crops, focus content in center
+- Safe Area: 1546x423 pixels (visible across all devices)
+- Style: Bold, focused on central content, text inside safe area
 
-**THUMBNAIL Requirements (YouTube Video Thumbnail):**
-- Aspect Ratio: 16:9 (matches video player)
+**THUMBNAIL (YouTube Video Thumbnail):**
+- Aspect Ratio: 16:9
 - Recommended Size: 1280x720 pixels
 - Minimum Width: 640 pixels
-- File Format: JPG, PNG, GIF, or BMP (max 2MB)
-- Style focus: High contrast, clear focal points, readable at small sizes, mobile-friendly
-- Design considerations: Eye-catching for feed visibility, avoid misleading content
+- File Format: PNG, JPG, GIF, or BMP (max 2MB)
+- Style: High contrast, sharp focal points, mobile-readable
 
-**PROMPT ENHANCEMENT GUIDELINES:**
-- Add technical quality descriptors (4K, ultra-detailed, professional quality, sharp focus)
-- Include appropriate lighting specifications (studio lighting, natural light, dramatic lighting)
-- Specify composition techniques (rule of thirds, centered composition, dynamic angle)
-- Add relevant artistic styles based on content (photorealistic, digital art, minimalist, etc.)
-- Include color enhancement terms (vibrant colors, high contrast, professional color grading)
-- Add platform-specific optimizations for YouTube content
-- Remove any text generation requests (AI image generators handle text poorly)
-- Specify aspect ratio and dimensions in the enhanced prompt when not provided by user
+**PROMPT ENHANCEMENT RULES:**
+- Maintain the original concept
+- Add image quality specs: (e.g., 4K, ultra-detailed, sharp focus)
+- Include lighting setups (studio, ambient, cinematic, etc.)
+- Specify composition: rule of thirds, symmetrical, top-down, etc.
+- Apply artistic style where applicable (digital art, minimalism, realism, etc.)
+- Use vibrant, high-contrast color palettes unless otherwise stated
+- Add platform (YouTube) and dimensions at the end of the prompt
+- Remove any text generation from prompts (AI-generated text is poor quality)
+- If user omits aspect ratio/dimensions, apply defaults based on TYPE
 
-**DEFAULT SPECIFICATIONS:**
-- LOGO: 1:1 aspect ratio, 800x800 pixels (YouTube channel icon standard)
-- BANNER: 16:9 aspect ratio, 2560x1440 pixels with safe area considerations
-- THUMBNAIL: 16:9 aspect ratio, 1280x720 pixels (YouTube standard)
-- If no style mentioned: Apply modern, professional aesthetic
-- If no colors specified: Use vibrant, high-contrast palette suitable for YouTube
-- Always optimize for YouTube platform specifications and device compatibility
+**DEFAULT TECHNICALS BY TYPE:**
+- LOGO: 1:1, 800x800, PNG
+- BANNER: 16:9, 2560x1440, PNG
+- THUMBNAIL: 16:9, 1280x720, JPG
+- Style Default: Modern, professional aesthetic
+- Platform Default: YouTube
 
-**ENHANCEMENT PROCESS:**
-1. Keep the core concept from the original prompt
-2. Add technical quality and style improvements
-3. Include appropriate aspect ratio specification
-4. Add platform optimization details
-5. Ensure the enhanced prompt will generate images suitable for YouTube use
+**OUTPUT FORMAT INSTRUCTIONS:**
+1. Don’t modify the original prompt text
+2. Append aspect ratio and size at the end of the prompt
+3. Derive missing metadata using TYPE-based defaults
+4. Ensure returned metadata is valid and platform-optimized
 
-Give me the metadata according to the TYPE and PROMPT. Analyze the prompt and try to extract the fields provided by the user. If not provided, use the defaults.
+Return the result in this format as plain text (no markdown, no extra lines):
 
-There can be different types: LOGO, BANNER, THUMBNAIL // For YouTube so be careful on aspect ratio and size
-
-Return the metadata in this format as plain text:
 {
-  "prompt": "<modified prompt to generate the image with aspect ratio and size said on the prompt if no aspect ratio then said the default, default platform is youtube>",
-  "responseExtension": "<based on image type e.g. png, jpg, etc.>",
+  "prompt": "<Don't modify the prompt. Just add the aspect ratio and size at the end based on image TYPE. If no aspect ratio is provided, use default for the image TYPE. Default platform is YouTube.>",
+  "responseExtension": "<Based on image TYPE, e.g., png, jpg, etc.>"
 }
 
-Ensure the metadata is relevant to the type and prompt provided. If specific details are missing, use sensible defaults.
+Only return the above JSON structure. No extra comments, no markdown, no formatting.
+
 `;

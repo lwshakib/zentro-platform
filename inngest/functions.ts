@@ -24,6 +24,8 @@ import {
   updateVideoStatus,
   uploadOnYoutube,
   uploadVideo,
+  renderVideo,
+  updateVideoUrl,
 } from "./helpers";
 
 export const createVideo = inngest.createFunction(
@@ -169,6 +171,34 @@ export const scheduleUpload = inngest.createFunction(
 
             return true;
             
+        } catch (error) {
+            return false;
+        }
+    }
+)
+
+
+
+export const renderZentroVideo = inngest.createFunction(
+    {
+        id: "render-video",
+        cancelOn: [
+            {
+                event: "zentro.render.cancel",
+                match: "data.videoId",
+            },
+        ],
+    },
+    {
+        event: "zentro.render.video",
+    },
+    async ({ event, step }) => {
+        const { videoId } = event?.data;
+        try {
+            const videoData = await getVideoData(videoId, step);
+            const videoUrl = await renderVideo(videoData, step);
+            await updateVideoUrl(videoId, videoUrl, step);
+            return true;
         } catch (error) {
             return false;
         }

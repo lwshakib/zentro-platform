@@ -15,6 +15,7 @@ export const createVideo = mutation({
     status: v.string(),
     title: v.optional(v.string()),
     updatedAt: v.string(),
+    rendering: v.string(),
   },
   handler: async (ctx, args) => {
     const {
@@ -27,6 +28,7 @@ export const createVideo = mutation({
       title,
       status,
       updatedAt,
+      rendering,
     } = args;
 
     const videoId = await ctx.db.insert("videos", {
@@ -39,6 +41,7 @@ export const createVideo = mutation({
       status,
       title,
       updatedAt,
+      rendering,
     });
     return videoId;
   },
@@ -147,6 +150,20 @@ export const updateVideoUrl = mutation({
 
     await ctx.db.patch(videoId, {
       videoUrl,
+    });
+  },
+});
+
+export const updateVideoRenderStatus = mutation({
+  args: {
+    videoId: v.id("videos"),
+    rendering: v.string()
+  },
+  handler: async (ctx, args) => {
+    const { videoId, rendering } = args;
+
+    await ctx.db.patch(videoId, {
+      rendering
     });
   },
 });

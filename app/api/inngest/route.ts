@@ -1,9 +1,9 @@
-import { createVideo, generateImage, scheduleUpload } from "@/inngest/functions";
+import { createVideo, generateImage, renderZentroVideo, scheduleUpload } from "@/inngest/functions";
 import { serve } from "inngest/next";
 import { inngest } from "../../../inngest/client";
 
 // Create an API that serves zero functions
 export const { GET, POST, PUT } = serve({
   client: inngest,
-  functions: [createVideo, generateImage, scheduleUpload],
+  functions: [createVideo, generateImage, scheduleUpload, renderZentroVideo],
 });

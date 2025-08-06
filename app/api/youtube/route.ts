@@ -33,7 +33,6 @@ export async function GET() {
       sameSite: "strict",
       maxAge: data.expires_in, // 3599
     });
-    cookieStore.set("googleRefreshToken", data.refresh_token);
     const channel = await getChannelData(data.access_token);
     return NextResponse.json({
       channel,

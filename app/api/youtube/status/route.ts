@@ -5,10 +5,15 @@ import { googleClientId, googleClientSecret } from "@/config";
 export async function GET(){
     try{
         const cookieStore = await cookies();
-        const googleRefreshToken = cookieStore.get("googleRefreshToken")?.value;
         const googleAccessToken = cookieStore.get("googleAccessToken")?.value;
-
-        if(!googleAccessToken && googleRefreshToken){
+        if(!googleAccessToken){
+            const googleRefreshToken = cookieStore.get("googleRefreshToken")?.value;
+            if(!googleRefreshToken){
+                return NextResponse.json({
+                    success: false,
+                    message: "YouTube connection not established",
+                }, {status: 404});
+            }
             const response = await fetch("https://oauth2.googleapis.com/token", {
                 method: "POST",
                 headers: {
@@ -28,18 +33,12 @@ export async function GET(){
                 sameSite: "strict",
                 maxAge: data.expires_in, // 3599
             });
-            cookieStore.set("googleRefreshToken", data.refresh_token);
             return NextResponse.json({
                 success: true,
                 message: "YouTube connection established successfully",
             }, {status: 200});
         }
-        if(!googleRefreshToken){
-            return NextResponse.json({
-                success: false,
-                message: "YouTube connection not established",
-            }, {status: 404});
-        }
+
         return NextResponse.json({
             success: true,
             message: "YouTube connection established successfully",

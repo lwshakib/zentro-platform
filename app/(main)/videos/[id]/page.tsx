@@ -3,14 +3,17 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/convex/_generated/api";
+import axios from "axios";
 import { useMutation, useQuery } from "convex/react";
 import {
   ArrowLeft,
   Calendar,
   Download,
   FileText,
+  Loader2,
   Mic,
   Palette,
+  Play,
   Trash2,
   Type,
   X,
@@ -20,7 +23,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import RemotionPlayer from "../../_components/remotion-player";
-import axios from "axios";
 
 type Props = {};
 
@@ -42,8 +44,17 @@ function page({}: Props) {
 
   // Download handler
   const handleDownload = () => {
-    if (videoData?.audioUrl) {
-      window.open(videoData.audioUrl, "_blank");
+    if (videoData?.videoUrl) {
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement("a");
+      link.href = videoData.videoUrl;
+      link.download = `${videoData.title || "video"}.mp4`;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      toast.error("Video not available for download");
     }
   };
 
@@ -59,8 +70,8 @@ function page({}: Props) {
         success: "Video deleted successfully!",
         error: "Failed to delete video",
       });
-      await promise;
       router.push("/videos");
+      await promise;
     } catch (error) {
       console.error("Error deleting video:", error);
       toast.error("Failed to delete video");
@@ -72,7 +83,9 @@ function page({}: Props) {
     if (!videoData?._id) return;
 
     try {
-      const promise = axios.post("/api/cancel/video", { videoId: videoData._id  });
+      const promise = axios.post("/api/cancel/video", {
+        videoId: videoData._id,
+      });
 
       toast.promise(promise, {
         loading: "Cancelling video...",
@@ -84,6 +97,27 @@ function page({}: Props) {
     } catch (error) {
       console.error("Error cancelling video:", error);
       toast.error("Failed to cancel video");
+    }
+  };
+
+  // Render video handler
+  const handleRenderVideo = async () => {
+    if (!videoData?._id) return;
+
+    try {
+      const promise = axios.post("/api/create/render", {
+        videoId: videoData._id,
+      });
+
+      toast.promise(promise, {
+        loading: "Starting video rendering...",
+        success: "Video rendering started!",
+        error: "Failed to start video rendering",
+      });
+      await promise;
+    } catch (error) {
+      console.error("Error rendering video:", error);
+      toast.error("Failed to start video rendering");
     }
   };
 
@@ -202,7 +236,9 @@ function page({}: Props) {
                 size={18}
               />
               <div className="font-semibold text-lg text-gray-900 dark:text-white">
-                {videoData?.title || <span className="italic">Content not found</span>}
+                {videoData?.title || (
+                  <span className="italic">Content not found</span>
+                )}
               </div>
             </div>
 
@@ -210,7 +246,9 @@ function page({}: Props) {
             <div className="flex items-center gap-2 mb-2">
               <Palette className="text-gray-500 dark:text-zinc-400" size={18} />
               <span className="font-medium text-gray-900 dark:text-white">
-                {videoData?.videoStyle || <span className="italic">Content not found</span>}
+                {videoData?.videoStyle || (
+                  <span className="italic">Content not found</span>
+                )}
               </span>
             </div>
 
@@ -218,7 +256,9 @@ function page({}: Props) {
             <div className="flex items-center gap-2 mb-2">
               <Mic className="text-gray-500 dark:text-zinc-400" size={18} />
               <span className="font-medium text-gray-900 dark:text-white">
-                {videoData?.voice || <span className="italic">Content not found</span>}
+                {videoData?.voice || (
+                  <span className="italic">Content not found</span>
+                )}
               </span>
             </div>
 
@@ -226,7 +266,9 @@ function page({}: Props) {
             <div className="flex items-center gap-2 mb-2">
               <Type className="text-gray-500 dark:text-zinc-400" size={18} />
               <span className="font-medium text-gray-900 dark:text-white">
-                {videoData?.captionStyle?.label || <span className="italic">Content not found</span>}
+                {videoData?.captionStyle?.label || (
+                  <span className="italic">Content not found</span>
+                )}
               </span>
             </div>
 
@@ -237,7 +279,10 @@ function page({}: Props) {
                 size={18}
               />
               <span className="font-medium text-gray-900 dark:text-white">
-                Topic: {videoData?.topic || <span className="italic">Content not found</span>}
+                Topic:{" "}
+                {videoData?.topic || (
+                  <span className="italic">Content not found</span>
+                )}
               </span>
             </div>
 
@@ -273,7 +318,9 @@ function page({}: Props) {
             <div className="flex items-start gap-2 mb-4">
               <div className="text-gray-700 dark:text-zinc-200 text-sm whitespace-pre-line">
                 <span className="font-semibold">Script:</span>{" "}
-                {videoData?.script || <span className="italic">Content not found</span>}
+                {videoData?.script || (
+                  <span className="italic">Content not found</span>
+                )}
               </div>
             </div>
           </div>
@@ -282,15 +329,46 @@ function page({}: Props) {
           <div className="space-y-3 mt-6">
             {videoData.status === "COMPLETED" && (
               <>
-                <Button
-                  className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
-                  variant="outline"
-                  onClick={handleDownload}
-                  aria-label="Export and Download Video"
-                >
-                  <Download />
-                  Export & Download
-                </Button>
+                {videoData.rendering === "RENDERED" ? (
+                  <Button
+                    className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
+                    variant="outline"
+                    onClick={handleDownload}
+                    aria-label="Export and Download Video"
+                  >
+                    <Download />
+                    Export & Download
+                  </Button>
+                ) : videoData.rendering === "NOT_RENDERED" ? (
+                  <Button
+                    className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
+                    onClick={handleRenderVideo}
+                    aria-label="Render Video"
+                  >
+                    <Play />
+                    Render Video
+                  </Button>
+                ) : videoData.rendering === "RENDERING" ? (
+                  <Button
+                    className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
+                    variant="outline"
+                    disabled
+                    aria-label="Rendering Video"
+                  >
+                    <Loader2 className="animate-spin" />
+                    Rendering Video...
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
+                    variant="outline"
+                    onClick={handleDownload}
+                    aria-label="Export and Download Video"
+                  >
+                    <Download />
+                    Export & Download
+                  </Button>
+                )}
                 <Button
                   className="w-full flex items-center justify-center gap-2 text-base sm:text-lg"
                   variant="destructive"
