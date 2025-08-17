@@ -4,6 +4,8 @@
 
 Zentro Platform is a comprehensive automation platform that streamlines your entire YouTube workflow from content creation to publishing. Built with Next.js 15, it leverages cutting-edge AI technologies to help content creators produce high-quality videos efficiently.
 
+![Zentro Platform Demo](public/demo.gif)
+
 ## ✨ Features
 
 ### 🤖 AI-Powered Video Creation
@@ -77,7 +79,7 @@ Zentro Platform is a comprehensive automation platform that streamlines your ent
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/zentro-platform.git
+   git clone https://github.com/lwshakib/zentro-platform.git
    cd zentro-platform
    ```
 
